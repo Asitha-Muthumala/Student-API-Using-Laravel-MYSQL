@@ -66,11 +66,80 @@ class StudentController extends Controller
 
     function updateStudent(Request $request, string $id)
     {
-        return "update student details";
+        $student = StudentModel::where('id', $id)->get();
+
+        if (count($student) >= 1) {
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:200',
+                'course' => 'required|string|max:200',
+                'email' => 'required|email|max:200',
+                'phone' => 'required|digits:10',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 400,
+                    'errors' => $validator->messages()
+                ], 400);
+            } else {
+                
+                $result = StudentModel::where('id', $id)->update([
+                    'name' => $request->name,
+                    'course' => $request->course,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                ]);
+                
+                if ($result) {
+                    return response()->json([
+                        'status' => 200,
+                        'message' => 'student updated successfully',
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'status' => 500,
+                        'error' => 'something went wrong'
+                    ], 500);
+                }
+            }
+        } else {
+            return response()->json([
+                'status' => 200,
+                'data' => 'Not Found Student According to Id',
+            ], 200);
+        }
     }
 
-    function deleteStudent(Request $request, string $id)
+    function deleteStudent(string $id)
     {
-        return "delete student";
+
+        $student = StudentModel::where('id', $id)->get();
+
+        if (count($student) == 0) {
+            return response()->json([
+                'status' => 200,
+                'data' => 'Not Found Student According to Id',
+            ], 200);
+        }
+        else {
+
+            $result = StudentModel::destroy($id);
+
+            if ($result) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'student deleted successfully',
+                ], 200);
+            }
+            else {
+                return response()->json([
+                    'status' => 500,
+                    'error' => 'something went wrong',
+                ], 500);
+            }
+
+        }
+
     }
 }
